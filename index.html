@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pigeon Crossing</title>
+    <style>
+        canvas {
+            background-color: #FFFFFF;
+            display: block;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const GRID_SIZE = 40;
+        const SCREEN_WIDTH = canvas.width;
+        const SCREEN_HEIGHT = canvas.height;
+
+        const pigeonImg = new Image();
+        pigeonImg.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAACXBIWXMAAAsTAAALEwEAmpwYAAABYUlEQVRIDe2WP0sDQRCFPyNUgESIgBBvBItS6C7CkQUU7CDkDWtb6FYlC/oJ4hCNJGgnFIsMSKCJ4QbgRKoRiJAVXpV6m0de9y5Yff9uZ2fD+7M7szs7uytVX2/b8PYcAiU9gBvoD+QBRmBwGnH+wj6aLkBEsG15grgAUeAiJ3onDG9jfTBcAzmdLgCPgNE6U+vE9Cr8tklCeipJmVNkcMcBPSptbRBWWZdyPSiwZwH7azrKApEFuEGLPlrJPpTDUnH0CeoklJyyiJNy0opNfLlCS9NRXaDdmkHaMSmKqAtAsR6xV8xlNPxPfP0bUInCqIk+Y+1LUj0FTEXoD9AYGvEVd1WwLzYgSah1rFVStICIZ0+LtZcHTmg1TEkYhAxlzpsDH3RTse8gYLOe3WrffVE8Mih3N7Sr1eo5fRwmB5QLTr0fNWh3GYyg1fsTia7f3bhI4AAAGP3KPwiLhDe9+7YLUSksXQAAAAASUVORK5CYII=';
+
+        const pigeon = {
+            x: SCREEN_WIDTH / 2 - GRID_SIZE / 2,
+            y: SCREEN_HEIGHT - GRID_SIZE,
+            width: GRID_SIZE,
+            height: GRID_SIZE,
+            draw() {
+                ctx.drawImage(pigeonImg, this.x, this.y, this.width, this.height);
+            },
+            moveUp() {
+                if (this.y - GRID_SIZE >= 0) this.y -= GRID_SIZE;
+            },
+            moveDown() {
+                if (this.y + GRID_SIZE < SCREEN_HEIGHT) this.y += GRID_SIZE;
+            },
+            moveLeft() {
+                if (this.x - GRID_SIZE >= 0) this.x -= GRID_SIZE;
+            },
+            moveRight() {
+                if (this.x + GRID_SIZE < SCREEN_WIDTH) this.x += GRID_SIZE;
+            }
+        };
+
+        class Car {
+            constructor(x, y, speed) {
+                this.x = x;
+                this.y = y;
+                this.width = GRID_SIZE;
+                this.height = GRID_SIZE;
+                this.speed = speed;
+            }
+            draw() {
+                ctx.fillStyle = 'red';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+            update() {
+                this.x += this.speed;
+                if (this.x > SCREEN_WIDTH) this.x = -GRID_SIZE;
+            }
+        }
+
+        const cars = [];
+        for (let i = 0; i < 5; i++) {
+            cars.push(new Car(
+                Math.random() * (SCREEN_WIDTH - GRID_SIZE),
+                Math.random() * (SCREEN_HEIGHT - GRID_SIZE * 2),
+                Math.random() * 5 + 3
+            ));
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            pigeon.draw();
+            cars.forEach(car => {
+                car.update();
+                car.draw();
+            });
+            if (isGameOver()) {
+                alert('Game Over!');
+                document.location.reload();
+            } else {
+                requestAnimationFrame(update);
+            }
+        }
+
+        function isGameOver() {
+            for (const car of cars) {
+                if (pigeon.x < car.x + car.width &&
+                    pigeon.x + pigeon.width > car.x &&
+                    pigeon.y < car.y + car.height &&
+                    pigeon.y + pigeon.height > car.y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case 'ArrowUp':
+                    pigeon.moveUp();
+                    break;
+                case 'ArrowDown':
+                    pigeon.moveDown();
+                    break;
+                case 'ArrowLeft':
+                    pigeon.moveLeft();
+                    break;
+                case 'ArrowRight':
+                    pigeon.moveRight();
+                    break;
+            }
+        });
+
+        pigeonImg.onload = function () {
+            update();
+        }
+    </script>
+</body>
+</html>
